@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6dbaf57cc9f689416d6118090aa9121755691226afadda97d2432e3276cafd3c"
+            "sha256": "77ec00bd9d0f4d6cb08a1a8b890c7ccc1082c6cca02e78032fefd423b14748ab"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -253,6 +253,15 @@
             "index": "pypi",
             "markers": "python_version >= '3.8'",
             "version": "==2.4.0"
+        },
+        "pyjwt": {
+            "hashes": [
+                "sha256:3b02fb0f44517787776cf48f2ae25d8e14f300e6d7545a4315cee571a415e850",
+                "sha256:7e1e5b56cc735432a7369cbfa0efe50fa113ebecdc04ae6922deba8b84582d0c"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==2.9.0"
         },
         "pymongo": {
             "hashes": [

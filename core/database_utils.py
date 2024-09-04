@@ -8,7 +8,7 @@ from bson import ObjectId
 from core.exceptions import ChatAppAPIError, EntityDoesNotExistError, EntityAlreadyExistsError
 
 
-async def get_or_fail(collection: str, body: dict, db: AsyncIOMotorDatabase, exc: ChatAppAPIError = None):
+async def get_or_fail(collection: str, body: dict, db: AsyncIOMotorDatabase, exc: ChatAppAPIError = None) -> dict:
     if (
         res := await db[collection].find_one(body)
     ) is not None:
@@ -18,11 +18,11 @@ async def get_or_fail(collection: str, body: dict, db: AsyncIOMotorDatabase, exc
             raise exc
         else:
             raise EntityDoesNotExistError(
-                detail=f"Document with {body=} not found in the {collection=}."
+                detail=f"Document with {body} not found in the {collection=}."
             )
 
 
-async def get_all_or_fail(collection: str, qp: Any, db: AsyncIOMotorDatabase):
+async def get_all_or_fail(collection: str, qp: Any, db: AsyncIOMotorDatabase) -> list:
     res = await db[collection] \
         .find() \
         .sort(qp.order_by, qp.order_direction) \
@@ -37,14 +37,14 @@ async def get_all_or_fail(collection: str, qp: Any, db: AsyncIOMotorDatabase):
         )
 
 
-async def create_or_fail(collection: str, body: dict, db: AsyncIOMotorDatabase):
+async def create_or_fail(collection: str, body: dict, db: AsyncIOMotorDatabase) -> dict:
     try:
         return await db[collection].insert_one(body)
     except DuplicateKeyError:
         raise EntityAlreadyExistsError
 
 
-async def update_or_fail(collection: str, object_id: str, body: dict, db: AsyncIOMotorDatabase):
+async def update_or_fail(collection: str, object_id: str, body: dict, db: AsyncIOMotorDatabase) -> dict:
     try:
         if (
             res := await db[collection].find_one_and_update(
@@ -62,10 +62,9 @@ async def update_or_fail(collection: str, object_id: str, body: dict, db: AsyncI
         raise EntityAlreadyExistsError
 
 
-async def delete_or_fail(collection: str, object_id: str, db: AsyncIOMotorDatabase):
+async def delete_or_fail(collection: str, object_id: str, db: AsyncIOMotorDatabase) -> None:
     res = await db[collection].find_one_and_delete({"_id": ObjectId(object_id)})
-    if res is not None:
-        return {}
-    raise EntityDoesNotExistError(
-        detail=f"Document with {object_id=} not found in the {collection=}."
-    )
+    if res is None:
+        raise EntityDoesNotExistError(
+            detail=f"Document with {object_id=} not found in the {collection=}."
+        )

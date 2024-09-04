@@ -1,16 +1,24 @@
 from datetime import datetime, timedelta, timezone
+from typing import Annotated
 
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from motor.motor_asyncio import AsyncIOMotorDatabase
 import jwt
 
 from core.settings import JWT_SECRET_KEY, JWT_ALGORITHM, JWT_ACCESS_TOKEN_EXPIRY
 from core.database_utils import get_or_fail
+from core.dependencies import get_db
 from core.exceptions import AuthenticationFailedError
 from core.hash import is_valid_password
 
 
-async def authenticate(collection: str, user_1: OAuth2PasswordRequestForm, db: AsyncIOMotorDatabase) -> dict:
+collection = "users"
+MongoDB = Annotated[AsyncIOMotorDatabase, Depends(get_db)]
+RequestForm = Annotated[OAuth2PasswordRequestForm, Depends()]
+
+
+async def authenticate(user_1: OAuth2PasswordRequestForm, db: AsyncIOMotorDatabase) -> dict:
     user_2 = await get_or_fail(collection, {"username": user_1.username}, db, AuthenticationFailedError)
     if not is_valid_password(user_1.password, user_2["password"]):
         raise AuthenticationFailedError

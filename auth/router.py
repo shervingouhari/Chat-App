@@ -1,16 +1,10 @@
-from typing import Annotated
+from fastapi import APIRouter
 
-from fastapi import APIRouter, Depends
-from fastapi.security import OAuth2PasswordRequestForm
-from motor.motor_asyncio import AsyncIOMotorDatabase
-
-from core.dependencies import get_db
-from .utils import authenticate, create_access_token
+from .utils import RequestForm, MongoDB, authenticate, create_access_token
 from .schemas import Token
 
 
 router = APIRouter()
-collection = "users"
 
 
 @router.post(
@@ -20,9 +14,9 @@ collection = "users"
     summary="Login"
 )
 async def login(
-    user: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: AsyncIOMotorDatabase = Depends(get_db)
+    user: RequestForm,
+    db: MongoDB
 ) -> Token:
-    user = await authenticate(collection, user, db)
+    user = await authenticate(user, db)
     access_token = create_access_token({"username": user["username"], "email": user["email"]})
     return Token(access_token=access_token)

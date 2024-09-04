@@ -2,17 +2,16 @@ from typing import Annotated, Optional, List, ClassVar
 from enum import Enum
 from abc import ABC
 
-from pydantic import BaseModel, ConfigDict, Field, EmailStr, SecretStr, BeforeValidator, model_validator, field_validator
+from fastapi import Query
 from pymongo import ASCENDING, DESCENDING
-from fastapi import Path, Query
+from pydantic import BaseModel, ConfigDict, Field, EmailStr, SecretStr, BeforeValidator, model_validator, field_validator
 
 from core.hash import hash_password as hp
 from core.database import Migration
 
 
-ObjectID = Annotated[str, Path(..., pattern=r"^[0-9a-f]{24}$", description="The unique identifier of the user.")]
 username_field = {
-    'min_length': 8,
+    'min_length': 5,
     'max_length': 20,
     'pattern': r'^[a-zA-Z0-9_-]+$'
 }

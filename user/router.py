@@ -1,12 +1,9 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Body, Depends, status
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from fastapi import APIRouter, status
 import bson
 
-from core.dependencies import get_db
 from core.database_utils import get_or_fail, get_all_or_fail, create_or_fail, update_or_fail, delete_or_fail
-from .schemas import ObjectID, UserCreate, UserUpdate, UserResponse, UsersResponse, ReadUsersQP
+from .schemas import UserResponse, UsersResponse
+from .utils import ObjectID, MongoDB, UserCreate, UserUpdate, ReadUsersQP
 
 
 router = APIRouter()
@@ -22,8 +19,8 @@ collection = "users"
     summary="Read Users"
 )
 async def read_users(
-    qp: Annotated[ReadUsersQP, Depends()],
-    db: AsyncIOMotorDatabase = Depends(get_db)
+    qp: ReadUsersQP,
+    db: MongoDB
 ):
     return UsersResponse(users=await get_all_or_fail(collection, qp, db))
 
@@ -38,7 +35,7 @@ async def read_users(
 )
 async def read_user(
     object_id: ObjectID,
-    db: AsyncIOMotorDatabase = Depends(get_db)
+    db: MongoDB
 ):
     return await get_or_fail(collection, {"_id": bson.ObjectId(object_id)}, db)
 
@@ -53,8 +50,8 @@ async def read_user(
     status_code=status.HTTP_201_CREATED
 )
 async def create_user(
-    user: UserCreate = Body(...),
-    db: AsyncIOMotorDatabase = Depends(get_db)
+    user: UserCreate,
+    db: MongoDB
 ):
     new_user = await create_or_fail(collection, user.model_dump(), db)
     created_user = await get_or_fail(collection, {"_id": bson.ObjectId(new_user.inserted_id)}, db)
@@ -71,8 +68,8 @@ async def create_user(
 )
 async def update_user(
     object_id: ObjectID,
-    user: UserUpdate = Body(...),
-    db: AsyncIOMotorDatabase = Depends(get_db)
+    user: UserUpdate,
+    db: MongoDB
 ):
     user = user.model_dump()
     if len(user) < 1:
@@ -90,6 +87,6 @@ async def update_user(
 )
 async def delete_user(
     object_id: ObjectID,
-    db: AsyncIOMotorDatabase = Depends(get_db)
+    db: MongoDB
 ):
     await delete_or_fail(collection, object_id, db)

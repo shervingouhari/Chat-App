@@ -30,7 +30,7 @@ async def read_users(
 
 
 @router.get(
-    "/{object_id}",
+    "/{object_id}/",
     response_model=UserResponse,
     response_model_by_alias=False,
     response_description="Operation successful.",
@@ -63,7 +63,7 @@ async def create_user(
 
 
 @router.put(
-    "/{object_id}",
+    "/{object_id}/",
     response_model=UserResponse,
     response_model_by_alias=False,
     response_description="Operation successful.",
@@ -83,7 +83,7 @@ async def update_user(
 
 
 @router.delete(
-    "/{object_id}",
+    "/{object_id}/",
     response_description="Operation successful.",
     summary="Delete User",
     description="Deletes the user with the given object_id.",

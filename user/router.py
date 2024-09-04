@@ -6,7 +6,7 @@ import bson
 
 from core.dependencies import get_db
 from core.database_utils import get_or_fail, get_all_or_fail, create_or_fail, update_or_fail, delete_or_fail
-from .models import UserCreate, UserUpdate, UserResponse, UsersResponse
+from .schemas import UserCreate, UserUpdate, UserResponse, UsersResponse
 from .utils import ReadUsersQP, ObjectID
 
 

@@ -14,9 +14,9 @@ router = APIRouter()
     summary="Login"
 )
 async def login(
-    user: RequestForm,
+    body: RequestForm,
     db: MongoDB
 ) -> Token:
-    user = await authenticate(user, db)
+    user = await authenticate(body, db)
     access_token = create_access_token({"username": user["username"], "email": user["email"]})
     return Token(access_token=access_token)

@@ -1,9 +1,12 @@
-from typing import Optional
+from typing import Annotated, Optional
 from enum import Enum
 
-from fastapi import Query
+from fastapi import Path, Query
 from pymongo import ASCENDING, DESCENDING
 from pydantic import BaseModel, field_validator
+
+
+ObjectID = Annotated[str, Path(..., pattern=r"^[0-9a-f]{24}$", description="The unique identifier of the user.")]
 
 
 class OrderBy(Enum):

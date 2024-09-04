@@ -1,13 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Path, Depends, status
+from fastapi import APIRouter, Body, Depends, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from bson import ObjectId
 
 from core.dependencies import get_db
 from core.database_utils import get_or_fail, get_all_or_fail, create_or_fail, update_or_fail, delete_or_fail
 from .models import UserCreate, UserUpdate, UserResponse, UsersResponse
-from .utils import ReadUsersQP
+from .utils import ReadUsersQP, ObjectID
 
 
 router = APIRouter()
@@ -38,9 +38,7 @@ async def read_users(
     summary="Read User"
 )
 async def read_user(
-    object_id: str = Path(
-        ..., pattern=r"^[0-9a-f]{24}$", description="The unique identifier of the user."
-    ),
+    object_id: ObjectID,
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     return await get_or_fail(collection, {"_id": ObjectId(object_id)}, db)
@@ -73,9 +71,7 @@ async def create_user(
     summary="Update User"
 )
 async def update_user(
-    object_id: str = Path(
-        ..., pattern=r"^[0-9a-f]{24}$", description="The unique identifier of the user."
-    ),
+    object_id: ObjectID,
     user: UserUpdate = Body(...),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
@@ -94,9 +90,7 @@ async def update_user(
     status_code=status.HTTP_204_NO_CONTENT
 )
 async def delete_user(
-    object_id: str = Path(
-        ..., pattern=r"^[0-9a-f]{24}$", description="The unique identifier of the user."
-    ),
+    object_id: ObjectID,
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     await delete_or_fail(collection, object_id, db)

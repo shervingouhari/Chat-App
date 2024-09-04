@@ -55,3 +55,11 @@ class AuthenticationFailedError(ChatAppAPIError):
         "Ensure that your username and password are correct. "
         "If using a token, ensure it is valid and not expired."
     )
+
+
+class ActionForbiddenError(ChatAppAPIError):
+    """Raised when a user attempts an action they are not authorized to perform."""
+
+    default_status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "You are not authorized to perform this action."
+    default_resolution = "Check your permissions and try again."

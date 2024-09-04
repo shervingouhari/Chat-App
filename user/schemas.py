@@ -32,7 +32,7 @@ class BaseUser(BaseModel, Migration, ABC):
 class UserCreate(BaseUser):
     username: str = Field(
         ...,
-        mix_length=8,
+        min_length=8,
         max_length=20,
         pattern=r'^[a-zA-Z0-9_-]+$'
     )
@@ -43,7 +43,7 @@ class UserCreate(BaseUser):
 class UserUpdate(BaseUser):
     username: Optional[str] = Field(
         None,
-        mix_length=8,
+        min_length=8,
         max_length=20,
         pattern=r'^[a-zA-Z0-9_-]+$'
     )

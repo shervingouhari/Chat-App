@@ -8,6 +8,17 @@ from core.hash import hash_password as hp
 from core.database import Migration
 
 
+username_field = {
+    'min_length': 8,
+    'max_length': 20,
+    'pattern': r'^[a-zA-Z0-9_-]+$'
+}
+password_field = {
+    'min_length': 8,
+    'max_length': 20
+}
+
+
 class BaseUser(BaseModel, Migration, ABC):
     collection: ClassVar = "users"
     unique: ClassVar = [("username", ASCENDING), ("email", ASCENDING)]
@@ -30,32 +41,19 @@ class BaseUser(BaseModel, Migration, ABC):
 
 
 class UserCreate(BaseUser):
-    username: str = Field(
-        ...,
-        min_length=8,
-        max_length=20,
-        pattern=r'^[a-zA-Z0-9_-]+$'
-    )
+    username: str = Field(..., **username_field)
     email: EmailStr = Field(...)
-    password: SecretStr = Field(..., min_length=8, max_length=20)
+    password: SecretStr = Field(..., **password_field)
 
 
 class UserUpdate(BaseUser):
-    username: Optional[str] = Field(
-        None,
-        min_length=8,
-        max_length=20,
-        pattern=r'^[a-zA-Z0-9_-]+$'
-    )
+    username: Optional[str] = Field(None, **username_field)
     email: Optional[EmailStr] = Field(None)
-    password: Optional[SecretStr] = Field(None, min_length=8, max_length=20)
+    password: Optional[SecretStr] = Field(None, **password_field)
 
 
 class UserResponse(BaseModel):
-    object_id: Annotated[
-        str,
-        BeforeValidator(lambda object_id: str(object_id))
-    ] = Field(alias="_id")
+    object_id: Annotated[str, BeforeValidator(lambda object_id: str(object_id))] = Field(alias="_id")
     username: str
     email: str
 

@@ -12,6 +12,7 @@ pydantic = {extras = ["email"], version = "*"}
 bcrypt = "*"
 passlib = "*"
 pyjwt = "*"
+python-multipart = "*"
 
 [dev-packages]
 

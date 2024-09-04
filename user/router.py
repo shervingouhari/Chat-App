@@ -3,11 +3,10 @@ import bson
 
 from core.database_utils import get_or_fail, get_all_or_fail, create_or_fail, update_or_fail, delete_or_fail
 from .schemas import UserResponse, UsersResponse
-from .utils import ObjectID, MongoDB, UserCreate, UserUpdate, ReadUsersQP
+from .utils import collection, ObjectID, MongoDB, UserCreate, UserUpdate, ReadUsersQP
 
 
 router = APIRouter()
-collection = "users"
 
 
 @router.get(

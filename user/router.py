@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from bson import ObjectId
+import bson
 
 from core.dependencies import get_db
 from core.database_utils import get_or_fail, get_all_or_fail, create_or_fail, update_or_fail, delete_or_fail
@@ -41,7 +41,7 @@ async def read_user(
     object_id: ObjectID,
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    return await get_or_fail(collection, {"_id": ObjectId(object_id)}, db)
+    return await get_or_fail(collection, {"_id": bson.ObjectId(object_id)}, db)
 
 
 @router.post(
@@ -58,7 +58,7 @@ async def create_user(
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     new_user = await create_or_fail(collection, user.model_dump(), db)
-    created_user = await get_or_fail(collection, {"_id": ObjectId(new_user.inserted_id)}, db)
+    created_user = await get_or_fail(collection, {"_id": bson.ObjectId(new_user.inserted_id)}, db)
     return created_user
 
 
@@ -77,7 +77,7 @@ async def update_user(
 ):
     user = user.model_dump()
     if len(user) < 1:
-        return await get_or_fail(collection, {"_id": ObjectId(object_id)}, db)
+        return await get_or_fail(collection, {"_id": bson.ObjectId(object_id)}, db)
     else:
         return await update_or_fail(collection, object_id, user, db)
 

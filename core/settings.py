@@ -24,6 +24,7 @@ env = Env()
 
 
 API_PREFIX = "api"
+LOGIN_URL = f"/{API_PREFIX}/auth/"
 ROUTER_DIRS = [
     "user",
     "auth",

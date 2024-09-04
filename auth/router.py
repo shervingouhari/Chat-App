@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Body, Depends
+from typing import Annotated
+
+from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from core.dependencies import get_db
-from core.database_utils import get_or_fail
-from core.exceptions import AuthenticationFailedError
-from core.hash import is_valid_password
-from .schemas import AuthLogin
+from .utils import authenticate, create_access_token
+from .schemas import Token
 
 
 router = APIRouter()
@@ -19,12 +20,9 @@ collection = "users"
     summary="Login"
 )
 async def login(
-    user: AuthLogin = Body(...),
+    user: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: AsyncIOMotorDatabase = Depends(get_db)
-):
-    user_1 = user.model_dump()
-    user_2 = await get_or_fail(collection, {"username": user_1["username"]}, db, AuthenticationFailedError)
-    if is_valid_password(user_1["password"], user_2["password"]):
-        return {"jwt": "token"}
-    else:
-        raise AuthenticationFailedError
+) -> Token:
+    user = await authenticate(collection, user, db)
+    access_token = create_access_token({"username": user["username"], "email": user["email"]})
+    return Token(access_token=access_token)

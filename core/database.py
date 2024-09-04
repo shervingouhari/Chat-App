@@ -71,8 +71,5 @@ class Migration:
             )
 
             for u in res.unique:
-                await client[settings.MONGODB_DATABASE_NAME][res.collection] \
-                    .create_index([u], unique=True)
-            log.info(
-                f"Successfully created {res.unique} index on the {res.collection}."
-            )
+                await client[settings.MONGODB_DATABASE_NAME][res.collection].create_index([u], unique=True)
+            log.info(f"Successfully created {res.unique} index on the {res.collection}.")

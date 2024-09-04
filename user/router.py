@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Body, Path, Depends, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from bson import ObjectId
@@ -21,7 +23,7 @@ collection = "users"
     summary="Read Users"
 )
 async def read_users(
-    qp: ReadUsersQP = Depends(),
+    qp: Annotated[ReadUsersQP, Depends()],
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     return UsersResponse(users=await get_all_or_fail(collection, qp, db))

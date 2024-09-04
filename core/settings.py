@@ -12,6 +12,7 @@ LOG_LEVEL = logging.DEBUG
 
 class Env(BaseSettings):
     MONGODB_URL: str = ...
+    JWT_SECRET_KEY: str = ...
 
     model_config = ConfigDict(
         env_file=ENV_FILE,
@@ -41,3 +42,7 @@ UVICORN_NAME = "manage:app"
 UVICORN_HOST = "127.0.0.1"
 UVICORN_PORT = 5000
 UVICORN_RELOAD = True
+
+JWT_SECRET_KEY = env.JWT_SECRET_KEY
+JWT_ALGORITHM = "HS256"
+JWT_ACCESS_TOKEN_EXPIRY_MINUTES = 30

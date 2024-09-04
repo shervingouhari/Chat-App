@@ -18,7 +18,7 @@ async def authenticate(collection: str, user_1: OAuth2PasswordRequestForm, db: A
         return user_2
 
 
-def create_access_token(user: dict):
+def create_access_token(user: dict) -> str:
     exp = datetime.now(timezone.utc) + timedelta(seconds=JWT_ACCESS_TOKEN_EXPIRY)
     user.update({"exp": exp})
     encoded_jwt = jwt.encode(user, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)

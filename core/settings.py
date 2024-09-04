@@ -17,6 +17,7 @@ class Env(BaseSettings):
     model_config = ConfigDict(
         env_file=ENV_FILE,
         case_sensitive=True,
+        extra='allow',
     )
 
 

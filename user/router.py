@@ -97,4 +97,4 @@ async def delete_user(
     ),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    return await delete_or_fail(collection, object_id, db)
+    await delete_or_fail(collection, object_id, db)

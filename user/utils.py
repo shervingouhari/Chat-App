@@ -20,13 +20,22 @@ UserUpdate = Annotated[UserUpdate, Body(...)]
 ReadUsersQP = Annotated[ReadUsersQP, Depends()]
 
 
-def ensure_authority(func):
-    """Make sure the route parameter responsible for getting the user is named `user`."""
+def ensure_authority(mode="normal"):
+    """
+    Make sure the route parameter responsible for getting the user is named `user`.
+    Options are `normal` and `admin`.
+    """
 
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        if str(kwargs.get("user")["_id"]) != kwargs.get("object_id"):
-            raise ActionForbiddenError
-        else:
-            return await func(*args, **kwargs)
-    return wrapper
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            user = kwargs.get("user")
+            if (
+                (mode == "normal" and str(user["_id"]) != kwargs.get("object_id")) or
+                (mode == "admin" and not bool(user.get("is_admin")))
+            ):
+                raise ActionForbiddenError
+            else:
+                return await func(*args, **kwargs)
+        return wrapper
+    return decorator

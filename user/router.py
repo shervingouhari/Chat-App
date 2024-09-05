@@ -3,7 +3,7 @@ import bson
 
 from core.database_utils import get_or_fail, get_all_or_fail, create_or_fail, update_or_fail, delete_or_fail
 from .schemas import UserResponse, UsersResponse
-from .utils import collection, ObjectID, MongoDB, UserCreate, UserUpdate, ReadUsersQP
+from .utils import collection, ObjectID, MongoDB, User, UserCreate, UserUpdate, ReadUsersQP, ensure_authority
 
 
 router = APIRouter()
@@ -17,10 +17,7 @@ router = APIRouter()
     description="Returns the users matching the given query params from the database.",
     summary="Read Users"
 )
-async def read_users(
-    qp: ReadUsersQP,
-    db: MongoDB
-):
+async def read_users(qp: ReadUsersQP, db: MongoDB):
     return UsersResponse(users=await get_all_or_fail(collection, qp, db))
 
 
@@ -32,10 +29,7 @@ async def read_users(
     description="Returns the user with the given object_id from the database.",
     summary="Read User"
 )
-async def read_user(
-    object_id: ObjectID,
-    db: MongoDB
-):
+async def read_user(object_id: ObjectID, db: MongoDB):
     return await get_or_fail(collection, {"_id": bson.ObjectId(object_id)}, db)
 
 
@@ -48,10 +42,7 @@ async def read_user(
     summary="Create User",
     status_code=status.HTTP_201_CREATED
 )
-async def create_user(
-    body: UserCreate,
-    db: MongoDB
-):
+async def create_user(body: UserCreate, db: MongoDB):
     new_user = await create_or_fail(collection, body.model_dump(), db)
     created_user = await get_or_fail(collection, {"_id": bson.ObjectId(new_user.inserted_id)}, db)
     return created_user
@@ -65,11 +56,8 @@ async def create_user(
     description="Updates the user with the given object_id and returns the user object.",
     summary="Update User"
 )
-async def update_user(
-    object_id: ObjectID,
-    body: UserUpdate,
-    db: MongoDB
-):
+@ensure_authority
+async def update_user(user: User, object_id: ObjectID, body: UserUpdate, db: MongoDB):
     body = body.model_dump()
     if len(body) < 1:
         return await get_or_fail(collection, {"_id": bson.ObjectId(object_id)}, db)
@@ -84,8 +72,6 @@ async def update_user(
     description="Deletes the user with the given object_id.",
     status_code=status.HTTP_204_NO_CONTENT
 )
-async def delete_user(
-    object_id: ObjectID,
-    db: MongoDB
-):
+@ensure_authority
+async def delete_user(user: User, object_id: ObjectID, db: MongoDB):
     await delete_or_fail(collection, object_id, db)

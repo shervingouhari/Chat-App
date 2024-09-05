@@ -39,7 +39,7 @@ class ConnectionManager:
             email = input("Enter email: ") or settings.ADMIN_DEFAULT_EMAIL
             password = getpass("Enter password: ") or settings.ADMIN_DEFAULT_PASSWORD
 
-            await client[settings.MONGODB_DATABASE_NAME]["users"].insert_one(
+            await client[settings.MONGODB_DATABASE_NAME][settings.USERS_COLLECTION].insert_one(
                 {"username": username, "email": email, "password": hp(password), "is_admin": True}
             )
             log.info("Super user created successfully.")

@@ -1,9 +1,11 @@
 from typing import List, Tuple
 from enum import Enum
+from getpass import getpass
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pydantic import BaseModel, field_validator
 
+from .hash import hash_password as hp
 from .logging import log
 from . import settings
 
@@ -29,6 +31,18 @@ class ConnectionManager:
     @classmethod
     def get_db(cls) -> AsyncIOMotorDatabase:
         return cls.client[settings.MONGODB_DATABASE_NAME]
+
+    @classmethod
+    async def create_super_user(cls):
+        with cls() as client:
+            username = input("Enter username: ") or settings.ADMIN_DEFAULT_USERNAME
+            email = input("Enter email: ") or settings.ADMIN_DEFAULT_EMAIL
+            password = getpass("Enter password: ") or settings.ADMIN_DEFAULT_PASSWORD
+
+            await client[settings.MONGODB_DATABASE_NAME]["users"].insert_one(
+                {"username": username, "email": email, "password": hp(password), "is_admin": True}
+            )
+            log.info("Super user created successfully.")
 
 
 class Migration:

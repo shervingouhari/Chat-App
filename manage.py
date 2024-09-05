@@ -65,8 +65,15 @@ def migrate():
         asyncio.run(database.Migration.commit())
 
 
+# RUN THIS COMMAND AFTER MIGRATING TO PREVENT DuplicateKeyError.
+@click.command("create-super-user")
+def create_super_user():
+    asyncio.run(database.ConnectionManager.create_super_user())
+
+
 cli.add_command(runserver)
 cli.add_command(migrate)
+cli.add_command(create_super_user)
 
 
 if __name__ == "__main__":

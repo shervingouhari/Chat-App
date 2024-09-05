@@ -49,10 +49,10 @@ async def read_user(
     status_code=status.HTTP_201_CREATED
 )
 async def create_user(
-    user: UserCreate,
+    body: UserCreate,
     db: MongoDB
 ):
-    new_user = await create_or_fail(collection, user.model_dump(), db)
+    new_user = await create_or_fail(collection, body.model_dump(), db)
     created_user = await get_or_fail(collection, {"_id": bson.ObjectId(new_user.inserted_id)}, db)
     return created_user
 
@@ -67,14 +67,14 @@ async def create_user(
 )
 async def update_user(
     object_id: ObjectID,
-    user: UserUpdate,
+    body: UserUpdate,
     db: MongoDB
 ):
-    user = user.model_dump()
-    if len(user) < 1:
+    body = body.model_dump()
+    if len(body) < 1:
         return await get_or_fail(collection, {"_id": bson.ObjectId(object_id)}, db)
     else:
-        return await update_or_fail(collection, object_id, user, db)
+        return await update_or_fail(collection, object_id, body, db)
 
 
 @router.delete(

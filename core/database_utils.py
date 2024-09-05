@@ -62,11 +62,9 @@ async def update_or_fail(collection: str, object_id: str, body: dict, db: AsyncI
         raise EntityAlreadyExistsError
 
 
-async def delete_or_fail(collection: str, object_id: str, db: AsyncIOMotorDatabase) -> dict:
+async def delete_or_fail(collection: str, object_id: str, db: AsyncIOMotorDatabase) -> None:
     res = await db[collection].find_one_and_delete({"_id": ObjectId(object_id)})
-    if res is not None:
-        return {"detail": "Operation successful."}
-    else:
+    if res is None:
         raise EntityDoesNotExistError(
             detail=f"Document with {object_id=} not found in the {collection=}."
         )

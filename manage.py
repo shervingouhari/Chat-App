@@ -12,9 +12,8 @@ from core import settings, database, exceptions
 def create_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(_: FastAPI):
-        database.connect()
-        yield
-        database.disconnect()
+        with database.ConnectionManager() as _:
+            yield
 
     app = FastAPI(
         lifespan=lifespan,
@@ -62,9 +61,8 @@ def runserver():
 
 @click.command()
 def migrate():
-    database.connect()
-    asyncio.run(database.Migration.commit())
-    database.disconnect()
+    with database.ConnectionManager() as _:
+        asyncio.run(database.Migration.commit())
 
 
 cli.add_command(runserver)

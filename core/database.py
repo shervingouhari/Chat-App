@@ -1,32 +1,34 @@
 from typing import List, Tuple
 from enum import Enum
 
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pydantic import BaseModel, field_validator
 
 from .logging import log
 from . import settings
 
 
-client: AsyncIOMotorClient = None
+class ConnectionManager:
+    client: AsyncIOMotorClient = None
 
+    def __enter__(self):
+        ConnectionManager.client = AsyncIOMotorClient(
+            settings.MONGODB_URL,
+            maxPoolSize=settings.MONGODB_MAX_POOL_SIZE,
+            minPoolSize=settings.MONGODB_MIN_POOL_SIZE
+        )
+        log.info("Connected to the database.")
+        return ConnectionManager.client
 
-def connect():
-    global client
-    client = AsyncIOMotorClient(
-        settings.MONGODB_URL,
-        maxPoolSize=settings.MONGODB_MAX_POOL_SIZE,
-        minPoolSize=settings.MONGODB_MIN_POOL_SIZE
-    )
-    log.info("Connected to the database.")
+    def __exit__(self, exc_type, exc_value, traceback):
+        if ConnectionManager.client is not None:
+            ConnectionManager.client.close()
+            ConnectionManager.client = None
+        log.info("Disconnected from the database.")
 
-
-def disconnect():
-    global client
-    if client is not None:
-        client.close()
-        client = None
-    log.info("Disconnected from the database.")
+    @classmethod
+    def get_db(cls) -> AsyncIOMotorDatabase:
+        return cls.client[settings.MONGODB_DATABASE_NAME]
 
 
 class Migration:
@@ -35,7 +37,7 @@ class Migration:
 
     You must create the following class variables:
         collection: ClassVar[str] -> The name of the collection.
-        unique: ClassVar[List[Tuple[str, int]]] -> The list of fields and indexing order.
+        unique: ClassVar[List[Tuple[str, int]]] -> The list of fields and indexing orders.
 
     Example Use Case:
         class User(Migration):
@@ -57,13 +59,11 @@ class Migration:
 
     @classmethod
     async def commit(cls):
-        assert client is not None, "Database client is not connected. Call connect() first."
+        assert ConnectionManager.client is not None, "Database client does not exist."
 
         for subclass in cls.__subclasses__():
-            assert hasattr(subclass, "collection"), \
-                f"{subclass.__name__} must have a 'collection' attribute."
-            assert hasattr(subclass, "unique"), \
-                f"{subclass.__name__} must have a 'unique' attribute."
+            assert hasattr(subclass, "collection"), f"{subclass.__name__} must have a 'collection' attribute."
+            assert hasattr(subclass, "unique"), f"{subclass.__name__} must have a 'unique' attribute."
 
             res = cls.CollectionUniqueModel(
                 collection=subclass.collection,
@@ -71,5 +71,5 @@ class Migration:
             )
 
             for u in res.unique:
-                await client[settings.MONGODB_DATABASE_NAME][res.collection].create_index([u], unique=True)
+                await ConnectionManager.client[settings.MONGODB_DATABASE_NAME][res.collection].create_index([u], unique=True)
             log.info(f"Successfully created {res.unique} index on the {res.collection}.")

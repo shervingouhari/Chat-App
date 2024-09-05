@@ -61,8 +61,8 @@ class Migration:
 
     class CollectionUniqueModel(BaseModel):
         class IndexOrderEnum(Enum):
-            ONE = 1
-            MINUS_ONE = -1
+            one = 1
+            minus_one = -1
 
         collection: str
         unique: List[Tuple[str, IndexOrderEnum]]

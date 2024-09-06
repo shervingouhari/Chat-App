@@ -26,7 +26,7 @@ class BaseUser(BaseModel, Migration, ABC):
 
     model_config = ConfigDict(extra="forbid")
 
-    @model_validator(mode='before')
+    @model_validator(mode='after')
     def no_spaces(cls, items):
         for value in items.values():
             if isinstance(value, str) and ' ' in value:

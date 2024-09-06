@@ -3,7 +3,7 @@ from abc import ABC
 
 from fastapi import Query
 from pymongo import ASCENDING, DESCENDING
-from pydantic import BaseModel, ConfigDict, Field, EmailStr, SecretStr, BeforeValidator, field_validator
+from pydantic import BaseModel, ConfigDict, Field, EmailStr, SecretStr, BeforeValidator, field_validator, model_validator
 
 from core.hash import hash_password as hp
 from core.database import Migration
@@ -28,16 +28,15 @@ class BaseUser(BaseModel, Migration, ABC):
 
     @field_validator('*', mode='after')
     def ensure_no_spaces(cls, value):
-        if ' ' in value.get_secret_value() if isinstance(value, SecretStr) else value:
+        if ' ' in (value.get_secret_value() if isinstance(value, SecretStr) else value):
             raise ValueError('Fields must not contain spaces.')
         return value
 
-    def model_dump(self, *args, **kwargs):
-        original_dump = super().model_dump(*args, **kwargs)
-        absolute_dump = {k: v for k, v in original_dump.items() if v is not None}
-        if absolute_dump.get("password") is not None:
-            absolute_dump["password"] = hp(self.password.get_secret_value())
-        return absolute_dump
+    @model_validator(mode='after')
+    def hash_password(cls, items):
+        if items.password is not None:
+            items.password = hp(items.password.get_secret_value())
+        return items
 
 
 class UserCreate(BaseUser):
@@ -50,6 +49,10 @@ class UserUpdate(BaseUser):
     username: Optional[str] = Field(None, **username_field)
     email: Optional[EmailStr] = Field(None)
     password: Optional[SecretStr] = Field(None, **password_field)
+
+    def absolute_model_dump(self, *args, **kwargs) -> dict:
+        original_dump = super().model_dump(*args, **kwargs)
+        return {k: v for k, v in original_dump.items() if v is not None}
 
 
 class UserResponse(BaseModel):

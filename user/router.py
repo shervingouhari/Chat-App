@@ -61,7 +61,7 @@ async def create_user(body: UserCreate, db: MongoDB):
 )
 @ensure_authority("normal")
 async def update_user(user: User, object_id: ObjectID, body: UserUpdate, db: MongoDB):
-    body = body.model_dump()
+    body = body.absolute_model_dump()
     if len(body) < 1:
         return await get_or_fail(collection, {"_id": bson.ObjectId(object_id)}, db)
     else:

@@ -64,11 +64,14 @@ class Migration:
 
     @classmethod
     async def commit(cls):
-        assert ConnectionManager.client is not None, "Database client does not exist."
+        if ConnectionManager.client is None:
+            raise RuntimeError("Database client is not initialized.")
 
         for subclass in cls.__subclasses__():
-            assert hasattr(subclass, "collection"), f"{subclass.__name__} must have a 'collection' attribute."
-            assert hasattr(subclass, "unique"), f"{subclass.__name__} must have a 'unique' attribute."
+            if not hasattr(subclass, "collection"):
+                raise ValueError(f"{subclass.__name__} must have a 'collection' attribute.")
+            if not hasattr(subclass, "unique"):
+                raise ValueError(f"{subclass.__name__} must have a 'unique' attribute.")
 
             res = cls.CollectionUniqueModel(
                 collection=subclass.collection,

@@ -13,6 +13,7 @@ bcrypt = "*"
 passlib = "*"
 pyjwt = "*"
 python-multipart = "*"
+python-socketio = "*"
 
 [dev-packages]
 

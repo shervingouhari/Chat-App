@@ -41,7 +41,7 @@ def ensure_authority(mode: AuthorityMode):
     Make sure the route parameter responsible for getting the user is named `user`.
     """
 
-    mode = AuthorityMode(mode=mode)
+    mode = AuthorityMode(mode=mode).mode
 
     def decorator(func):
         @wraps(func)

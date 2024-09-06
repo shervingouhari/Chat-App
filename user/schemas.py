@@ -3,7 +3,7 @@ from abc import ABC
 
 from fastapi import Query
 from pymongo import ASCENDING, DESCENDING
-from pydantic import BaseModel, ConfigDict, Field, EmailStr, SecretStr, BeforeValidator, model_validator, field_validator
+from pydantic import BaseModel, ConfigDict, Field, EmailStr, SecretStr, BeforeValidator, field_validator
 
 from core.hash import hash_password as hp
 from core.database import Migration
@@ -26,12 +26,11 @@ class BaseUser(BaseModel, Migration, ABC):
 
     model_config = ConfigDict(extra="forbid")
 
-    @model_validator(mode='after')
-    def no_spaces(cls, items):
-        for value in items.values():
-            if isinstance(value, str) and ' ' in value:
-                raise ValueError('Fields must not contain spaces.')
-        return items
+    @field_validator('*', mode='after')
+    def ensure_no_spaces(cls, value):
+        if ' ' in value.get_secret_value() if isinstance(value, SecretStr) else value:
+            raise ValueError('Fields must not contain spaces.')
+        return value
 
     def model_dump(self, *args, **kwargs):
         original_dump = super().model_dump(*args, **kwargs)

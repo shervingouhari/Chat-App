@@ -13,10 +13,7 @@ router = APIRouter()
     description="Returns a JWT if the given credentials are correct.",
     summary="Login"
 )
-async def login(
-    body: RequestForm,
-    db: MongoDB
-) -> Token:
+async def login(body: RequestForm, db: MongoDB) -> Token:
     user = await authenticate(body, db)
     access_token = create_access_token({"username": user["username"], "email": user["email"]})
     return Token(access_token=access_token)

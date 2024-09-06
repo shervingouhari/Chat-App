@@ -16,8 +16,7 @@ from .schemas import AuthorityMode
 
 
 collection = USERS_COLLECTION
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=LOGIN_URL)
-OAuth2Scheme = Annotated[str, Depends(oauth2_scheme)]
+OAuth2Scheme = Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl=LOGIN_URL))]
 MongoDB = Annotated[AsyncIOMotorDatabase, Depends(ConnectionManager.get_db)]
 RequestForm = Annotated[OAuth2PasswordRequestForm, Depends()]
 

@@ -1,5 +1,4 @@
-from typing import Annotated, Optional, List, ClassVar
-from enum import Enum
+from typing import Annotated, Optional, Literal, List, ClassVar
 from abc import ABC
 
 from fastapi import Query
@@ -65,20 +64,11 @@ class UsersResponse(BaseModel):
 
 
 class ReadUsersQP(BaseModel):
-    class OrderBy(Enum):
-        object_id = "object_id"
-        username = "username"
-        email = "email"
-
-    class OrderDirection(Enum):
-        ascending = "ascending"
-        descending = "descending"
-
-    order_by: OrderBy = Query(
-        OrderBy.username, description="Field to order the results by"
+    order_by: Literal["object_id", "username", "email"] = Query(
+        "username", description="Field to order the results by"
     )
-    order_direction: OrderDirection = Query(
-        OrderDirection.descending, description="Direction to order the results by"
+    order_direction: Literal["ascending", "descending"] = Query(
+        "descending", description="Direction to order the results by"
     )
     skip: Optional[int] = Query(
         0, ge=0, description="Number of users to skip"
@@ -89,8 +79,8 @@ class ReadUsersQP(BaseModel):
 
     @field_validator('order_direction', mode='after')
     def convert_order_direction(cls, value):
-        return DESCENDING if value == cls.OrderDirection.descending else ASCENDING
+        return DESCENDING if value == "descending" else ASCENDING
 
     @field_validator('order_by', mode='after')
     def convert_order_by(cls, value):
-        return "_id" if value == cls.OrderBy.object_id else value.value
+        return "_id" if value == "object_id" else value

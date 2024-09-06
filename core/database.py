@@ -1,9 +1,8 @@
-from typing import List, Tuple
-from enum import Enum
+from typing import Literal, List, Tuple
 from getpass import getpass
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 from .hash import hash_password as hp
 from .logging import log
@@ -51,7 +50,7 @@ class Migration:
 
     You must create the following class variables:
         collection: ClassVar[str] -> The name of the collection.
-        unique: ClassVar[List[Tuple[str, int]]] -> The list of fields and indexing orders.
+        unique: ClassVarList[Tuple[str, Literal[1, -1]]] -> The list of fields and indexing orders.
 
     Example Use Case:
         class User(Migration):
@@ -60,16 +59,8 @@ class Migration:
     """
 
     class CollectionUniqueModel(BaseModel):
-        class IndexOrderEnum(Enum):
-            one = 1
-            minus_one = -1
-
         collection: str
-        unique: List[Tuple[str, IndexOrderEnum]]
-
-        @field_validator('unique', mode='after')
-        def convert_unique(cls, value):
-            return [(field, index_order.value) for field, index_order in value]
+        unique: List[Tuple[str, Literal[1, -1]]]
 
     @classmethod
     async def commit(cls):

@@ -58,7 +58,7 @@ class Migration:
             unique: ClassVar = [("username", 1), ("email", -1)]
     """
 
-    class CollectionUniqueModel(BaseModel):
+    class IndexSchema(BaseModel):
         collection: str
         unique: List[Tuple[str, Literal[1, -1]]]
 
@@ -73,7 +73,7 @@ class Migration:
             if not hasattr(subclass, "unique"):
                 raise ValueError(f"{subclass.__name__} must have a 'unique' attribute.")
 
-            res = cls.CollectionUniqueModel(
+            res = cls.IndexSchema(
                 collection=subclass.collection,
                 unique=subclass.unique
             )

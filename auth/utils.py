@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from motor.motor_asyncio import AsyncIOMotorDatabase
 import jwt
 
-from core.settings import USERS_COLLECTION, LOGIN_URL, JWT_SECRET_KEY, JWT_ALGORITHM, JWT_ACCESS_TOKEN_EXPIRY
+from core.settings import MONGODB_COLLECTION_USERS, LOGIN_URL, JWT_SECRET_KEY, JWT_ALGORITHM, JWT_ACCESS_TOKEN_EXPIRY
 from core.database_utils import get_or_fail
 from core.database import ConnectionManager
 from core.exceptions import AuthenticationFailedError, ActionForbiddenError
@@ -15,7 +15,7 @@ from core.hash import is_valid_password
 from .schemas import AuthorityMode
 
 
-collection = USERS_COLLECTION
+collection = MONGODB_COLLECTION_USERS
 OAuth2Scheme = Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl=LOGIN_URL))]
 MongoDB = Annotated[AsyncIOMotorDatabase, Depends(ConnectionManager.get_db)]
 RequestForm = Annotated[OAuth2PasswordRequestForm, Depends()]

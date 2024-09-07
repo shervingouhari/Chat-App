@@ -49,8 +49,8 @@ def cli():
     pass
 
 
-@click.command()
-def runserver():
+@click.command("runserver")
+def run_server():
     uvicorn.run(
         settings.UVICORN_NAME,
         host=settings.UVICORN_HOST,
@@ -66,12 +66,12 @@ def migrate():
 
 
 # RUN THIS COMMAND AFTER MIGRATING TO PREVENT DuplicateKeyError.
-@click.command("create-super-user")
+@click.command("createsuperuser")
 def create_super_user():
     asyncio.run(database.ConnectionManager.create_super_user())
 
 
-cli.add_command(runserver)
+cli.add_command(run_server)
 cli.add_command(migrate)
 cli.add_command(create_super_user)
 

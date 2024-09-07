@@ -16,4 +16,4 @@ class TokenPayload(BaseModel):
 
 
 class AuthorityMode(BaseModel):
-    mode: Literal["normal", "admin"]
+    mode: Literal["normal", "admin"] = Field(...)

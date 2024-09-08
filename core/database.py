@@ -10,26 +10,26 @@ from . import settings
 
 
 class ConnectionManager:
-    client: AsyncIOMotorClient = None
+    _client: AsyncIOMotorClient = None
 
     def __enter__(self):
-        ConnectionManager.client = AsyncIOMotorClient(
+        ConnectionManager._client = AsyncIOMotorClient(
             settings.MONGODB_URL,
             maxPoolSize=settings.MONGODB_MAX_POOL_SIZE,
             minPoolSize=settings.MONGODB_MIN_POOL_SIZE
         )
         log.info("Connected to the database.")
-        return ConnectionManager.client
+        return ConnectionManager._client
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if ConnectionManager.client is not None:
-            ConnectionManager.client.close()
-            ConnectionManager.client = None
+        if ConnectionManager._client is not None:
+            ConnectionManager._client.close()
+            ConnectionManager._client = None
         log.info("Disconnected from the database.")
 
     @classmethod
     def get_db(cls) -> AsyncIOMotorDatabase:
-        return cls.client[settings.MONGODB_DATABASE_NAME]
+        return cls._client[settings.MONGODB_DATABASE_NAME]
 
     @classmethod
     async def create_super_user(cls):
@@ -64,7 +64,7 @@ class Migration:
 
     @classmethod
     async def commit(cls):
-        if ConnectionManager.client is None:
+        if ConnectionManager._client is None:
             raise RuntimeError("Database client is not initialized.")
 
         for subclass in cls.__subclasses__():
@@ -79,5 +79,5 @@ class Migration:
             )
 
             for u in res.unique:
-                await ConnectionManager.client[settings.MONGODB_DATABASE_NAME][res.collection].create_index([u], unique=True)
+                await ConnectionManager._client[settings.MONGODB_DATABASE_NAME][res.collection].create_index([u], unique=True)
             log.info(f"Successfully created {res.unique} index on the {res.collection}.")

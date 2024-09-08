@@ -68,3 +68,12 @@ async def delete_or_fail(collection: str, object_id: str, db: AsyncIOMotorDataba
         raise EntityDoesNotExistError(
             detail=f"Document with {object_id=} not found in the {collection=}."
         )
+
+
+async def get_or_create(collection: str, body: dict, db: AsyncIOMotorDatabase) -> dict:
+    if (
+        res := await db[collection].find_one(body)
+    ) is not None:
+        return res
+    else:
+        return await create_or_fail(collection, body, db)

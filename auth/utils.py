@@ -20,7 +20,7 @@ MongoDB = Annotated[AsyncIOMotorDatabase, Depends(ConnectionManager.get_db)]
 RequestForm = Annotated[OAuth2PasswordRequestForm, Depends()]
 
 
-async def authenticate(user_1: OAuth2PasswordRequestForm, db: AsyncIOMotorDatabase) -> dict:
+async def authenticate(user_1: RequestForm, db: AsyncIOMotorDatabase) -> dict:
     user_2 = await get_or_fail(collection, {"username": user_1.username}, db, AuthenticationFailedError)
     if not is_valid_password(user_1.password, user_2["password"]):
         raise AuthenticationFailedError

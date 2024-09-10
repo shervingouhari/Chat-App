@@ -34,9 +34,9 @@ class ConnectionManager:
     @classmethod
     async def create_super_user(cls):
         with cls() as client:
-            username = input("Enter username: ") or settings.ADMIN_DEFAULT_USERNAME
-            email = input("Enter email: ") or settings.ADMIN_DEFAULT_EMAIL
-            password = getpass("Enter password: ") or settings.ADMIN_DEFAULT_PASSWORD
+            username = input("Enter username: ")
+            email = input("Enter email: ")
+            password = getpass("Enter password: ")
 
             await client[settings.MONGODB_DATABASE_NAME][settings.USERS_COLLECTION].insert_one(
                 {"username": username, "email": email, "password": hp(password), "is_admin": True}

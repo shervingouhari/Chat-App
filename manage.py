@@ -13,7 +13,8 @@ def create_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(_: FastAPI):
         with database.MongoDBConnectionManager() as _:
-            yield
+            async with database.RedisConnectionManager() as _:
+                yield
 
     app = FastAPI(
         lifespan=lifespan,

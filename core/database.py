@@ -3,6 +3,7 @@ from getpass import getpass
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pydantic import BaseModel
+from redis.asyncio import Redis
 
 from .hash import hash_password as hp
 from .logging import log
@@ -47,6 +48,30 @@ class MongoDBConnectionManager:
                 }
             )
             log.info("Super user created successfully.")
+
+
+class RedisConnectionManager:
+    _db: Redis = None
+
+    async def __aenter__(self):
+        RedisConnectionManager._db = Redis.from_url(
+            settings.REDIS_URL,
+            min_connections=settings.REDIS_MIN_CONNECTIONS,
+            max_connections=settings.REDIS_MAX_CONNECTIONS,
+            decode_responses=True
+        )
+        log.info("Connected to Redis.")
+        return RedisConnectionManager._db
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        if RedisConnectionManager._db is not None:
+            await RedisConnectionManager._db.close()
+            RedisConnectionManager._db = None
+        log.info("Disconnected from Redis.")
+
+    @classmethod
+    def get_db(cls) -> Redis:
+        return cls._db
 
 
 class Migration:

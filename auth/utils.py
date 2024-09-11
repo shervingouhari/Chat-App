@@ -9,14 +9,14 @@ import jwt
 
 from core.settings import MONGODB_COLLECTION_USERS, LOGIN_URL, JWT_SECRET_KEY, JWT_ALGORITHM, JWT_ACCESS_TOKEN_EXPIRY
 from core.database_utils import get_or_fail
-from core.database import ConnectionManager
+from core.database import MongoDBConnectionManager
 from core.exceptions import AuthenticationFailedError, ActionForbiddenError
 from core.hash import is_valid_password
 
 
 collection = MONGODB_COLLECTION_USERS
 OAuth2Scheme = Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl=LOGIN_URL))]
-MongoDB = Annotated[AsyncIOMotorDatabase, Depends(ConnectionManager.get_db)]
+MongoDB = Annotated[AsyncIOMotorDatabase, Depends(MongoDBConnectionManager.get_db)]
 RequestForm = Annotated[OAuth2PasswordRequestForm, Depends()]
 
 

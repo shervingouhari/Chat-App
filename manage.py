@@ -12,7 +12,7 @@ from core import settings, database, exceptions
 def create_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(_: FastAPI):
-        with database.ConnectionManager() as _:
+        with database.MongoDBConnectionManager() as _:
             yield
 
     app = FastAPI(
@@ -61,14 +61,14 @@ def run_server():
 
 @click.command()
 def migrate():
-    with database.ConnectionManager() as _:
+    with database.MongoDBConnectionManager() as _:
         asyncio.run(database.Migration.commit())
 
 
 # RUN THIS COMMAND AFTER MIGRATING TO PREVENT DuplicateKeyError.
 @click.command("createsuperuser")
 def create_super_user():
-    asyncio.run(database.ConnectionManager.create_super_user())
+    asyncio.run(database.MongoDBConnectionManager.create_super_user())
 
 
 cli.add_command(run_server)

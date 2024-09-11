@@ -9,23 +9,23 @@ from .logging import log
 from . import settings
 
 
-class ConnectionManager:
+class MongoDBConnectionManager:
     _client: AsyncIOMotorClient = None
 
     def __enter__(self):
-        ConnectionManager._client = AsyncIOMotorClient(
+        MongoDBConnectionManager._client = AsyncIOMotorClient(
             settings.MONGODB_URL,
             maxPoolSize=settings.MONGODB_MAX_POOL_SIZE,
             minPoolSize=settings.MONGODB_MIN_POOL_SIZE
         )
-        log.info("Connected to the database.")
-        return ConnectionManager._client
+        log.info("Connected to MongoDB.")
+        return MongoDBConnectionManager._client
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if ConnectionManager._client is not None:
-            ConnectionManager._client.close()
-            ConnectionManager._client = None
-        log.info("Disconnected from the database.")
+        if MongoDBConnectionManager._client is not None:
+            MongoDBConnectionManager._client.close()
+            MongoDBConnectionManager._client = None
+        log.info("Disconnected from MongoDB.")
 
     @classmethod
     def get_db(cls) -> AsyncIOMotorDatabase:
@@ -39,7 +39,12 @@ class ConnectionManager:
             password = getpass("Enter password: ")
 
             await client[settings.MONGODB_DATABASE_NAME][settings.USERS_COLLECTION].insert_one(
-                {"username": username, "email": email, "password": hp(password), "is_admin": True}
+                {
+                    "username": username,
+                    "email": email,
+                    "password": hp(password),
+                    "is_admin": True
+                }
             )
             log.info("Super user created successfully.")
 
@@ -64,7 +69,7 @@ class Migration:
 
     @classmethod
     async def commit(cls):
-        if ConnectionManager._client is None:
+        if MongoDBConnectionManager._client is None:
             raise RuntimeError("Database client is not initialized.")
 
         for subclass in cls.__subclasses__():
@@ -79,5 +84,7 @@ class Migration:
             )
 
             for u in res.unique:
-                await ConnectionManager._client[settings.MONGODB_DATABASE_NAME][res.collection].create_index([u], unique=True)
+                await MongoDBConnectionManager \
+                    ._client[settings.MONGODB_DATABASE_NAME][res.collection] \
+                    .create_index([u], unique=True)
             log.info(f"Successfully created {res.unique} index on the {res.collection}.")

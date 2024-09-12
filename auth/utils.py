@@ -1,27 +1,26 @@
 from datetime import datetime, timedelta, timezone
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Callable
 from functools import wraps
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from pydantic import ValidationError
 import jwt
 
 from core.settings import MONGODB_COLLECTION_USERS, LOGIN_URL, JWT_SECRET_KEY, JWT_ALGORITHM, JWT_ACCESS_TOKEN_EXPIRY
-from core.database_utils import get_or_fail
-from core.database import MongoDBConnectionManager
+from core.mongodb import Manager
 from core.exceptions import AuthenticationFailedError, ActionForbiddenError
 from core.hash import is_valid_password
+from .schemas import TokenPayload
 
 
 collection = MONGODB_COLLECTION_USERS
 OAuth2Scheme = Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl=LOGIN_URL))]
-MongoDB = Annotated[AsyncIOMotorDatabase, Depends(MongoDBConnectionManager.get_db)]
 RequestForm = Annotated[OAuth2PasswordRequestForm, Depends()]
 
 
-async def authenticate(user_1: RequestForm, db: AsyncIOMotorDatabase) -> dict:
-    user_2 = await get_or_fail(collection, {"username": user_1.username}, db, AuthenticationFailedError)
+async def authenticate(user_1: RequestForm) -> dict:
+    user_2 = await Manager.get_or_fail(collection, {"username": user_1.username}, AuthenticationFailedError)
     if not is_valid_password(user_1.password, user_2["password"]):
         raise AuthenticationFailedError
     else:
@@ -34,7 +33,27 @@ def create_access_token(user: dict) -> str:
     return jwt.encode(user, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
 
-def ensure_authority(mode: Literal["normal", "admin"]):
+def verified_access_token(token: str) -> dict:
+    try:
+        token = jwt.decode(
+            token,
+            JWT_SECRET_KEY,
+            algorithms=[JWT_ALGORITHM],
+            verify=True
+        )
+    except jwt.InvalidTokenError:
+        raise AuthenticationFailedError
+
+    try:
+        return TokenPayload(
+            username=token.get("username"),
+            email=token.get("email")
+        ).model_dump()
+    except ValidationError:
+        raise AuthenticationFailedError
+
+
+def ensure_authority(mode: Literal["normal", "admin"]) -> Callable:
     """
     Make sure the route parameter responsible for getting the user is named `user`.
     """

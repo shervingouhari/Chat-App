@@ -34,7 +34,7 @@ class EntityDoesNotExistError(ChatAppAPIError):
 
     default_status_code = status.HTTP_404_NOT_FOUND
     default_detail = "Document does not exist in the database."
-    default_resolution = "Ensure the entity ID or query parameters are correct, and the entity exists before attempting to retrieve it."
+    default_resolution = "Ensure the entity ID or query parameters are correct, and the entity exists."
 
 
 class EntityAlreadyExistsError(ChatAppAPIError):

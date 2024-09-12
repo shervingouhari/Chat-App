@@ -6,7 +6,7 @@ from pymongo import ASCENDING, DESCENDING
 from pydantic import BaseModel, ConfigDict, Field, EmailStr, SecretStr, BeforeValidator, field_validator, model_validator
 
 from core.hash import hash_password as hp
-from core.database import Migration
+from core.mongodb import Migration
 
 
 username_field = {

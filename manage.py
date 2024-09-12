@@ -8,14 +8,14 @@ from fastapi import FastAPI, Request, responses
 import uvicorn
 import click
 
-from core import settings, database, exceptions
+from core import settings, mongodb, redis, exceptions
 
 
 def create_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(_: FastAPI):
-        with database.MongoDBConnectionManager() as _:
-            async with database.RedisConnectionManager() as _:
+        with mongodb.Manager() as _:
+            async with redis.Manager() as _:
                 yield
 
     app = FastAPI(
@@ -64,14 +64,13 @@ def run_server():
 
 @click.command()
 def migrate():
-    with database.MongoDBConnectionManager() as _:
-        asyncio.run(database.Migration.commit())
+    asyncio.run(mongodb.Migration.commit())
 
 
 # RUN THIS COMMAND AFTER MIGRATING TO PREVENT DuplicateKeyError.
 @click.command("createsuperuser")
 def create_super_user():
-    asyncio.run(database.MongoDBConnectionManager.create_super_user())
+    asyncio.run(mongodb.Manager.create_super_user())
 
 
 cli.add_command(run_server)

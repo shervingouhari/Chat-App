@@ -1,10 +1,10 @@
 from fastapi import APIRouter, status
 import bson
 
-from core.database_utils import get_or_fail, get_all_or_fail, create_or_fail, update_or_fail, delete_or_fail
+from core.mongodb import Manager
 from auth.utils import ensure_authority
 from .schemas import UserResponse, UsersResponse
-from .utils import collection, ObjectID, MongoDB, User, UserCreate, UserUpdate, ReadUsersQP
+from .utils import collection, ObjectID, User, UserCreate, UserUpdate, ReadUsersQP
 
 
 router = APIRouter()
@@ -19,8 +19,8 @@ router = APIRouter()
     summary="Read Users"
 )
 @ensure_authority(mode="admin")
-async def read_users(user: User, qp: ReadUsersQP, db: MongoDB):
-    return UsersResponse(users=await get_all_or_fail(collection, qp, db))
+async def read_users(user: User, qp: ReadUsersQP):
+    return UsersResponse(users=await Manager.get_all_or_fail(collection, qp))
 
 
 @router.get(
@@ -32,8 +32,8 @@ async def read_users(user: User, qp: ReadUsersQP, db: MongoDB):
     summary="Read User"
 )
 @ensure_authority("normal")
-async def read_user(user: User, object_id: ObjectID, db: MongoDB):
-    return await get_or_fail(collection, {"_id": bson.ObjectId(object_id)}, db)
+async def read_user(user: User, object_id: ObjectID):
+    return await Manager.get_or_fail(collection, {"_id": bson.ObjectId(object_id)})
 
 
 @router.post(
@@ -45,9 +45,9 @@ async def read_user(user: User, object_id: ObjectID, db: MongoDB):
     summary="Create User",
     status_code=status.HTTP_201_CREATED
 )
-async def create_user(body: UserCreate, db: MongoDB):
-    new_user = await create_or_fail(collection, body.model_dump(), db)
-    created_user = await get_or_fail(collection, {"_id": bson.ObjectId(new_user.inserted_id)}, db)
+async def create_user(body: UserCreate):
+    new_user = await Manager.create_or_fail(collection, body.model_dump())
+    created_user = await Manager.get_or_fail(collection, {"_id": bson.ObjectId(new_user.inserted_id)})
     return created_user
 
 
@@ -60,12 +60,12 @@ async def create_user(body: UserCreate, db: MongoDB):
     summary="Update User"
 )
 @ensure_authority("normal")
-async def update_user(user: User, object_id: ObjectID, body: UserUpdate, db: MongoDB):
+async def update_user(user: User, object_id: ObjectID, body: UserUpdate):
     body = body.absolute_model_dump()
     if len(body) < 1:
-        return await get_or_fail(collection, {"_id": bson.ObjectId(object_id)}, db)
+        return await Manager.get_or_fail(collection, {"_id": bson.ObjectId(object_id)})
     else:
-        return await update_or_fail(collection, object_id, body, db)
+        return await Manager.update_or_fail(collection, object_id, "$set", body)
 
 
 @router.delete(
@@ -76,5 +76,5 @@ async def update_user(user: User, object_id: ObjectID, body: UserUpdate, db: Mon
     status_code=status.HTTP_204_NO_CONTENT
 )
 @ensure_authority("normal")
-async def delete_user(user: User, object_id: ObjectID, db: MongoDB):
-    await delete_or_fail(collection, object_id, db)
+async def delete_user(user: User, object_id: ObjectID):
+    await Manager.delete_or_fail(collection, object_id)

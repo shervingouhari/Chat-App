@@ -63,6 +63,7 @@ class RedisConnectionManager:
 
     async def __aexit__(self, exc_type, exc_value, traceback):
         if RedisConnectionManager._db is not None:
+            await RedisConnectionManager._db.flushdb()
             await RedisConnectionManager._db.close()
             RedisConnectionManager._db = None
         log.info("Disconnected from Redis.")

@@ -56,8 +56,6 @@ class RedisConnectionManager:
     async def __aenter__(self):
         RedisConnectionManager._db = Redis.from_url(
             settings.REDIS_URL,
-            min_connections=settings.REDIS_MIN_CONNECTIONS,
-            max_connections=settings.REDIS_MAX_CONNECTIONS,
             decode_responses=True
         )
         log.info("Connected to Redis.")

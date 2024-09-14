@@ -41,6 +41,20 @@ def create_app() -> FastAPI:
             tags=[directory]
         )
 
+    # from starlette.middleware.cors import CORSMiddleware
+    # app.add_middleware(
+    #     CORSMiddleware,
+    #     allow_origins=[
+    #         'http://127.0.0.1:5500',
+    #         'https://admin.socket.io'
+    #     ],
+    #     allow_credentials=True,
+    #     allow_methods=["*"],
+    #     allow_headers=["*"],
+    # )
+    from chat.app import server
+    app.mount("/", app=server)
+
     return app
 
 
